@@ -8,7 +8,7 @@ typedef int mT;
 class VecInt
 {
 private:
-  int size;
+  int size = 0;
 public:
   mT * data;
   VecInt();
