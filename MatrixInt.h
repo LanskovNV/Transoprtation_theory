@@ -1,6 +1,5 @@
 #pragma once
 
-//#include "IndexSet.h"
 #include "IndexPair.h"
 #include "VecInt.h"
 typedef int mT;

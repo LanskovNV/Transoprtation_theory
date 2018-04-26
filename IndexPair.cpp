@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+using namespace std;
+
 IndexPair::IndexPair(int iRow_, int iCol_)
 {
   iRow = iRow_;
@@ -10,7 +12,7 @@ IndexPair::IndexPair(int iRow_, int iCol_)
 
 
 
-void IndexPair::Print(char const * s)
+void IndexPair::Print(char const * s) const
 {
   std::cout << s << std::endl;
   std::cout << "X: " << iRow << " Y: " << iCol << std::endl;
