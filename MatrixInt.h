@@ -3,22 +3,29 @@
 #include "IndexPair.h"
 #include "VecInt.h"
 typedef int mT;
+
+#define CLOSED_CELL_SYMB "  X "
+
 class MatrixInt
 {
 private:
-  int row, col;
+  int row = 0 , col = 0;
 public:
   mT ** data;
+  MatrixInt();
   MatrixInt(const MatrixInt& m);
   MatrixInt(int row, int col);
+  MatrixInt& operator=(const MatrixInt& m);
+  ~MatrixInt();
 
-
-  void Print(const char * s);
-  void PrintPlan(const char * s);
-  void PrintPlanWithPot(const char * s, MatrixInt& mC, VecInt& vV, VecInt &vU);
-  //void Print(const char * s, IndexSet & ColSet);
+  void Print(const char * s) const;
+  void PrintPlan(const char * s) const;
+  void PrintPlanWithPot(const char * s, const MatrixInt &mC, const VecInt & vV, const VecInt &vU) const;
+  
 
   mT& operator[](IndexPair & cell);
+  mT* operator[](size_t ind);
+  const mT* operator[](size_t ind) const;
 
   int getRowCnt() const
   {
