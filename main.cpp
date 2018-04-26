@@ -1,10 +1,14 @@
 #include <iostream>
 #include <fstream>
+
 #include "TransportationTheorySolver.h"
+
 using namespace std;
   int main(void)
   {
     ifstream mCstream("tasks/transp_mC.txt");
+    ifstream vAstream("tasks/transp_vA.txt");
+    ifstream vBstream("tasks/transp_vB.txt");
 
     int mCrows, mCcols;
     mCstream >> mCrows;
@@ -20,7 +24,6 @@ using namespace std;
     mCstream.close();
 
     int vArows;
-    ifstream vAstream("tasks/transp_vA.txt");
 
     vAstream >> vArows;
     VecInt vA = VecInt(vArows);
@@ -29,9 +32,7 @@ using namespace std;
       vAstream >> vA.data[iRow];
     }
     vAstream.close();
-
     int vBRows;
-    ifstream vBstream("tasks/transp_vB.txt");
 
     vBstream >> vBRows;
     VecInt vB = VecInt(vBRows);
@@ -47,6 +48,7 @@ using namespace std;
 
     MatrixInt result = TransportationTheorySolver::solve(mC, vA, vB);
     result.PrintPlan("###############_RESULT____##############:");
+    
     int sum = 0;
     for (int iRow = 0; iRow < mCrows; ++iRow)
     {

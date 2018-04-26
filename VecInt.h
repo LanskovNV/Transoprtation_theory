@@ -11,15 +11,16 @@ private:
   int size;
 public:
   mT * data;
+  VecInt();
   VecInt(int size);
   VecInt(const VecInt &v);
+  VecInt& operator=(const VecInt &v);
+  ~VecInt();
 
   mT& operator[](int ind);
+  mT operator[](int ind) const;
 
-  mT VecVec(VecInt& v);
-
-  void Print(const char * s);
-  //void Print(const char * s, IndexSet & rowSet);
+  void Print(const char * s) const;
 
    int getSize() const {
     return size;
@@ -27,3 +28,4 @@ public:
 
 };
 
+mT operator*(const VecInt& v1, const VecInt& v2);
