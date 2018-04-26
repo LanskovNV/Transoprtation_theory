@@ -23,7 +23,8 @@ public:
   void PrintPlanWithPot(const char * s, const MatrixInt &mC, const VecInt & vV, const VecInt &vU) const;
   
 
-  mT& operator[](IndexPair & cell);
+  mT& operator[](const IndexPair & cell);
+  mT operator[](const IndexPair & cell) const;
   mT* operator[](size_t ind);
   const mT* operator[](size_t ind) const;
 

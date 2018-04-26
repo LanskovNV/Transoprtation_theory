@@ -14,8 +14,13 @@ IndexPair::IndexPair(int iRow_, int iCol_)
 
 void IndexPair::Print(char const * s) const
 {
-  std::cout << s << std::endl;
-  std::cout << "X: " << iRow << " Y: " << iCol << std::endl;
+ cout << s << endl;
+ cout << "X: " << iRow << " Y: " << iCol << endl;
+}
+
+void IndexPair::Print() const
+{
+  cout << "X: " << iRow << " Y: " << iCol << endl;
 }
 
 bool operator==(const IndexPair & left, const IndexPair & right)

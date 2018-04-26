@@ -19,7 +19,7 @@ using namespace std;
     for (int iRow = 0; iRow < mCrows; ++iRow)
     {
       for (int iCol = 0; iCol < mCcols; ++iCol)
-        mCstream >> mC.data[iRow][iCol];
+        mCstream >> mC[iRow][iCol];
     }
     mCstream.close();
 
@@ -29,7 +29,7 @@ using namespace std;
     VecInt vA = VecInt(vArows);
     for (int iRow = 0; iRow < vArows; ++iRow)
     {
-      vAstream >> vA.data[iRow];
+      vAstream >> vA[iRow];
     }
     vAstream.close();
     int vBRows;
@@ -38,7 +38,7 @@ using namespace std;
     VecInt vB = VecInt(vBRows);
     for (int iRow = 0; iRow < vBRows; ++iRow)
     {
-      vBstream >> vB.data[iRow];
+      vBstream >> vB[iRow];
     }
     vBstream.close();
 
@@ -47,15 +47,15 @@ using namespace std;
     vB.Print("Default b:");
 
     MatrixInt result = TransportationTheorySolver::solve(mC, vA, vB);
-    result.PrintPlan("###############_RESULT____##############:");
+    result.PrintPlan("###############_RESULT____##############");
     
     int sum = 0;
     for (int iRow = 0; iRow < mCrows; ++iRow)
     {
       for (int iCol = 0; iCol < mCcols; ++iCol)
       {
-        if(result.data[iRow][iCol] != -1)
-          sum += result.data[iRow][iCol] * mC.data[iRow][iCol];
+        if(result[iRow][iCol] != -1)
+          sum += result[iRow][iCol] * mC[iRow][iCol];
       }
     }
     cout << "PRICE: " << sum << endl;

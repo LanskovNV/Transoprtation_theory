@@ -3,7 +3,9 @@
 #include <iostream>
 #include <iomanip>
 using namespace std;
-bool TransportationTheorySolver::TryDirection(list<IndexPair> &recalcLoop, MatrixInt &mRes, IndexPair & cur, IndexPair & target, IndexPair& dir, int sizeN, int sizeM)
+bool TransportationTheorySolver::TryDirection(list<IndexPair> &recalcLoop, const MatrixInt &mRes,
+                                              const IndexPair & cur, const IndexPair & target, const IndexPair& dir,
+                                              int sizeN, int sizeM)
 {
   if (cur.iCol < 0 || cur.iCol >= sizeN)
     return false;
@@ -48,37 +50,42 @@ bool TransportationTheorySolver::TryDirection(list<IndexPair> &recalcLoop, Matri
 
   return false;
 }
-MatrixInt TransportationTheorySolver::solve(MatrixInt & mC, VecInt  vA, VecInt  vB)
+MatrixInt TransportationTheorySolver::solve(const MatrixInt &mC, const VecInt& vA_, const VecInt& vB_)
 {
+  int stepNum = 0;
   MatrixInt res(mC.getRowCnt(), mC.getColCnt());
+
+  VecInt vA(vA_);
+  VecInt vB(vB_);
 
   int sizeN = vB.getSize();
   int sizeM = vA.getSize();
 
 
-  //составление начального опроного плана
+  /*
+   * Creating initial plan
+   */
 
   IndexPair curCell(0, 0);
   do {
     int val = min(vA[curCell.iRow], vB[curCell.iCol]);
 
-
     if (vA[curCell.iRow] == val && vB[curCell.iCol] == val)
     {
-
+      // income and outcome are equal
       res[curCell] = val;
       vB[curCell.iCol] -= val;
       vA[curCell.iRow] -= val;
       if (curCell.iRow + 1 < sizeM)
       {
         for (int iCol = curCell.iCol + 1; iCol < sizeN; iCol++)
-          res.data[curCell.iRow][iCol] = -1;
+          res[curCell.iRow][iCol] = -1;
         curCell.iRow++;
       }
       else
       {
         for (int iRow = curCell.iRow + 1; iRow < sizeM; iRow++)
-          res.data[iRow][curCell.iCol] = -1;
+          res[iRow][curCell.iCol] = -1;
         curCell.iCol++;
       }
       continue;
@@ -87,17 +94,17 @@ MatrixInt TransportationTheorySolver::solve(MatrixInt & mC, VecInt  vA, VecInt  
     res[curCell] = val;
     if (vA[curCell.iRow] == val)
     {
-      // закрыть строку
+      // close row
       for (int iCol = curCell.iCol + 1; iCol < sizeN; iCol++)
-        res.data[curCell.iRow][iCol] = -1;
+        res[curCell.iRow][iCol] = -1;
       vB[curCell.iCol] -= val;
       curCell.iRow++;
     }
     else
     {
-      // закрыть столбец
+      // close column
       for (int iRow = curCell.iRow + 1; iRow < sizeM; iRow++)
-        res.data[iRow][curCell.iCol] = -1;
+        res[iRow][curCell.iCol] = -1;
       vA[curCell.iRow] -= val;
       curCell.iCol++;
     }
@@ -106,10 +113,16 @@ MatrixInt TransportationTheorySolver::solve(MatrixInt & mC, VecInt  vA, VecInt  
   if (vA[curCell.iRow] != vB[curCell.iCol])
   {
     cout << "Not Closed Task!" << endl;
+    res[0][0] = -1;
+    return res;
   }
   res[curCell] = vA[curCell.iRow];
   /// начальный базисный план построен 
+
+#ifdef LOG_INITIAL_PLAN
   res.PrintPlan("Initial Basic Plan:");
+#endif // LOG_INITIAL_PLAN
+
 
   VecInt vPotU(sizeM);
   VecInt vPotV(sizeN);
@@ -119,8 +132,12 @@ MatrixInt TransportationTheorySolver::solve(MatrixInt & mC, VecInt  vA, VecInt  
 
   for (;;)
   {
-    cout << "______________________________________________________________________" << endl;
-    res.PrintPlan("New Plan: ");
+    cout << "___________________________________________" << endl;
+    cout << "Starting step no: " << stepNum++ << endl;
+#ifdef LOG_CUR_STEP_PLAN
+    res.PrintPlan("Current Plan: ");
+#endif // LOG_CUR_STEP_PLAN
+
 
     //рассчитать потенциалы
     for (int i = 0; i < sizeM; ++i)
@@ -173,7 +190,14 @@ MatrixInt TransportationTheorySolver::solve(MatrixInt & mC, VecInt  vA, VecInt  
       }
     }
 
+#ifdef LOG_CUR_POTENTIALS
     res.PrintPlanWithPot("Potentials: ", mC, vPotV, vPotU);
+#endif // LOG_CUR_POTENTIALS
+
+
+#ifdef LOG_FAILED_CELLS
+    cout << "Failed cells:" << endl;
+#endif // LOG_FAILED_CELLS
 
     //проверка плана на оптимальность
     bool optimalPlan = true;
@@ -182,15 +206,18 @@ MatrixInt TransportationTheorySolver::solve(MatrixInt & mC, VecInt  vA, VecInt  
     for (int iRow = 0; iRow < sizeM; ++iRow)
     {
       for (int iCol = 0; iCol < sizeN; ++iCol) {
-        if (res.data[iRow][iCol] != -1)
+        if (res[iRow][iCol] != -1)
           continue;
-        if (vPotV[iCol] - vPotU[iRow] - mC.data[iRow][iCol] > 0)
+        if (vPotV[iCol] - vPotU[iRow] - mC[iRow][iCol] > 0)
         {
           optimalPlan = false;
+#ifdef LOG_FAILED_CELLS
           cout << "Bad X: " << iRow << " Bad Y: " << iCol << endl;
-          if (vPotV[iCol] - vPotU[iRow] - mC.data[iRow][iCol] > max)
+#endif // LOG_FAILED_CELLS
+
+          if (vPotV[iCol] - vPotU[iRow] - mC[iRow][iCol] > max)
           {
-            max = vPotV[iCol] - vPotU[iRow] - mC.data[iRow][iCol];
+            max = vPotV[iCol] - vPotU[iRow] - mC[iRow][iCol];
             clearCell = IndexPair(iRow, iCol);
           }
         }
@@ -217,8 +244,12 @@ MatrixInt TransportationTheorySolver::solve(MatrixInt & mC, VecInt  vA, VecInt  
     }
 
     recalcLoop.push_front(clearCell);
+
+#ifdef LOG_RECALC_LOOP
+    cout << "Recalc Loop Cells: " << endl;
     for (auto pair : recalcLoop)
-      pair.Print("");
+      pair.Print();
+#endif // LOG_RECALC_LOOP
 
     list<IndexPair>::iterator iter = recalcLoop.begin();
     iter++;
@@ -239,7 +270,10 @@ MatrixInt TransportationTheorySolver::solve(MatrixInt & mC, VecInt  vA, VecInt  
       iter++;
     }
 
+#ifdef LOG_THEHA
     cout << "Theta: " << theta << endl;
+#endif // LOG_THEHA
+
 
     if (theta != 0)
     {
@@ -272,18 +306,32 @@ MatrixInt TransportationTheorySolver::solve(MatrixInt & mC, VecInt  vA, VecInt  
         }
       }
     }
+  }// END OFF MAIN LOOP
 
-  }
+  cout << "--------------------------------------------" << endl;
+  cout << "Optimal Plan founded." << endl;
 
+
+#ifdef FIND_ALL_CORNER_PLANS
   list<IndexPair> zeroDelta;
   list<IndexPair> zeroDeltaBackup;
+  int plansCnt = 1;
 
-  cout << "Delta C ZERO:" << endl;
+  cout << "Plan no: " << plansCnt++ << endl;
+#ifdef LOG_DELTAS
+  cout << "Delta C ZEROS:" << endl;
+#endif // LOG_DELTAS
+
   for (int iRow = 0; iRow < sizeM; ++iRow)
   {
     for (int iCol = 0; iCol < sizeN; ++iCol) {
       if (res.data[iRow][iCol] != -1)
+      {
+#ifdef LOG_DELTAS
         cout << " V  ";
+#endif // LOG_DELTAS
+
+      }
       else
       {
         if (vPotV[iCol] - vPotU[iRow] - mC.data[iRow][iCol] == 0)
@@ -291,13 +339,17 @@ MatrixInt TransportationTheorySolver::solve(MatrixInt & mC, VecInt  vA, VecInt  
           zeroDelta.push_back(IndexPair(iRow, iCol));
           zeroDeltaBackup.push_back(IndexPair(iRow, iCol));
         }
+#ifdef LOG_DELTAS
         cout << setw(3) << vPotV[iCol] - vPotU[iRow] - mC.data[iRow][iCol] << " ";
+#endif // LOG_DELTAS
+
       }
     }
+#ifdef LOG_DELTAS
     cout << endl;
+#endif // LOG_DELTAS
   }
 
-  res.PrintPlan("PLAN 0");
   int sum = 0;
   for (int iRow = 0; iRow < 4; ++iRow)
   {
@@ -311,9 +363,15 @@ MatrixInt TransportationTheorySolver::solve(MatrixInt & mC, VecInt  vA, VecInt  
   IndexPair nextCell = zeroDelta.front();
   IndexPair otherCell = zeroDelta.back();
 
+  
+
+
   bool loopEnded = false;
   while (!loopEnded)
   {
+    cout << "+++++++++++++++++++++" << endl;
+    cout << "Plan no: " << plansCnt++ << endl;
+
     //TESTING RECALC
     list<IndexPair> recalcLoop;
     recalcLoop.clear();
@@ -321,7 +379,7 @@ MatrixInt TransportationTheorySolver::solve(MatrixInt & mC, VecInt  vA, VecInt  
     IndexPair clearCell = nextCell;
     nextCell = otherCell;
 
-    clearCell.Print("StartingCell");
+    clearCell.Print("StartingCell:");
     for (;;)
     {
       if (TryDirection(recalcLoop, res, clearCell + IndexPair(0, 1), clearCell, IndexPair(0, 1), sizeN, sizeM))
@@ -390,12 +448,18 @@ MatrixInt TransportationTheorySolver::solve(MatrixInt & mC, VecInt  vA, VecInt  
     }
 
 
+#ifdef LOG_DELTAS
     cout << "Delta C ZERO:" << endl;
+#endif // LOG_DELTAS
     for (int iRow = 0; iRow < sizeM; ++iRow)
     {
       for (int iCol = 0; iCol < sizeN; ++iCol) {
         if (res.data[iRow][iCol] != -1)
+        {
+#ifdef LOG_DELTAS
           cout << " V  ";
+#endif // LOG_DELTAS
+        }
         else
         {
           if (vPotV[iCol] - vPotU[iRow] - mC.data[iRow][iCol] == 0)
@@ -403,13 +467,18 @@ MatrixInt TransportationTheorySolver::solve(MatrixInt & mC, VecInt  vA, VecInt  
             if (IndexPair(iRow, iCol) != nextCell)
               otherCell = IndexPair(iRow, iCol);
           }
+#ifdef LOG_DELTAS
           cout << setw(3) << vPotV[iCol] - vPotU[iRow] - mC.data[iRow][iCol] << " ";
+#endif // LOG_DELTAS
         }
       }
+#ifdef LOG_DELTAS
       cout << endl;
+#endif // LOG_DELTAS
     }
 
-    res.PrintPlan("PLAN:");
+
+    res.PrintPlan("Recalculated plan:");
     int sum = 0;
     for (int iRow = 0; iRow < 4; ++iRow)
     {
@@ -425,5 +494,11 @@ MatrixInt TransportationTheorySolver::solve(MatrixInt & mC, VecInt  vA, VecInt  
     if (zeroDeltaBackup.back() == nextCell && zeroDeltaBackup.front() == otherCell)
       loopEnded = true;
   }
+
+  cout << "Total plans count: " << plansCnt - 2 << endl;
+  cout << "WARNING: Last plan is equal to first!" << endl;
+
+#endif // FIND_ALL_CORNER_PLANS
+
   return res;
 }

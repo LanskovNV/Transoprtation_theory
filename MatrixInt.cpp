@@ -126,7 +126,12 @@ void MatrixInt::PrintPlanWithPot(const char * s, const MatrixInt &mC, const VecI
   cout << endl;
 }
 
-mT & MatrixInt::operator[](IndexPair & cell)
+mT & MatrixInt::operator[](const IndexPair & cell)
+{
+  return data[cell.iRow][cell.iCol];
+}
+
+mT MatrixInt::operator[](const IndexPair & cell) const
 {
   return data[cell.iRow][cell.iCol];
 }
