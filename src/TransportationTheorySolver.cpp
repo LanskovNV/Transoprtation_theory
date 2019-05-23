@@ -108,7 +108,7 @@ MatrixInt TransportationTheorySolver::solve(const MatrixInt &mC, const VecInt& v
       vA[curCell.iRow] -= val;
       curCell.iCol++;
     }
-  } while (curCell != IndexPair(sizeM - 1, sizeN - 1));
+  } while (curCell != IndexPair(sizeN - 1, sizeM - 1));
 
   if (vA[curCell.iRow] != vB[curCell.iCol])
   {

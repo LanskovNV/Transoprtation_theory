@@ -13,33 +13,24 @@ using namespace std;
     int mCrows, mCcols;
     mCstream >> mCrows;
     mCstream >> mCcols;
-
     MatrixInt mC = MatrixInt(mCrows, mCcols);
-
     for (int iRow = 0; iRow < mCrows; ++iRow)
-    {
       for (int iCol = 0; iCol < mCcols; ++iCol)
         mCstream >> mC[iRow][iCol];
-    }
     mCstream.close();
 
     int vArows;
-
     vAstream >> vArows;
     VecInt vA = VecInt(vArows);
     for (int iRow = 0; iRow < vArows; ++iRow)
-    {
-      vAstream >> vA[iRow];
-    }
+        vAstream >> vA[iRow];
     vAstream.close();
-    int vBRows;
 
+    int vBRows;
     vBstream >> vBRows;
     VecInt vB = VecInt(vBRows);
     for (int iRow = 0; iRow < vBRows; ++iRow)
-    {
       vBstream >> vB[iRow];
-    }
     vBstream.close();
 
     mC.Print("Default C:");

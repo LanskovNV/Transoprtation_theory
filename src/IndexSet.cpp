@@ -1,6 +1,6 @@
 #include "IndexSet.h"
 #include <iostream>
-#include "Matrix.h"
+#include "MatrixInt.h"
 
 IndexSet::IndexSet()
 {

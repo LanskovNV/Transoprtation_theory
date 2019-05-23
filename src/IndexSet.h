@@ -14,7 +14,7 @@ public:
   e.g. 0, 1, 2, ....  , (cnt-1)
   */
   IndexSet(int cnt);
-  IndexSet::IndexSet(const IndexSet &is);
+  IndexSet(const IndexSet &is);
 
   void Print(const char * s);
 
