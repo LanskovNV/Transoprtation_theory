@@ -10,9 +10,6 @@
 #define LOG_RECALC_LOOP
 #define LOG_THEHA
 
-#define FIND_ALL_CORNER_PLANS
-#define LOG_DELTAS
-
 class TransportationTheorySolver
 {
 private:
