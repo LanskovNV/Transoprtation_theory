@@ -2,7 +2,9 @@
 #include <math.h>
 #include <iostream>
 #include <iomanip>
+
 using namespace std;
+
 bool TransportationTheorySolver::TryDirection(list<IndexPair> &recalcLoop, const MatrixInt &mRes,
                                               const IndexPair & cur, const IndexPair & target, const IndexPair& dir,
                                               int sizeN, int sizeM)
@@ -108,7 +110,7 @@ MatrixInt TransportationTheorySolver::solve(const MatrixInt &mC, const VecInt& v
       vA[curCell.iRow] -= val;
       curCell.iCol++;
     }
-  } while (curCell != IndexPair(sizeN - 1, sizeM - 1));
+  } while (curCell != IndexPair(sizeM - 1, sizeN - 1));
 
   if (vA[curCell.iRow] != vB[curCell.iCol])
   {
@@ -117,7 +119,6 @@ MatrixInt TransportationTheorySolver::solve(const MatrixInt &mC, const VecInt& v
     return res;
   }
   res[curCell] = vA[curCell.iRow];
-  /// начальный базисный план построен 
 
 #ifdef LOG_INITIAL_PLAN
   res.PrintPlan("Initial Basic Plan:");
@@ -138,8 +139,6 @@ MatrixInt TransportationTheorySolver::solve(const MatrixInt &mC, const VecInt& v
     res.PrintPlan("Current Plan: ");
 #endif // LOG_CUR_STEP_PLAN
 
-
-    //рассчитать потенциалы
     for (int i = 0; i < sizeM; ++i)
       potUFilled[i] = false;
     for (int i = 0; i < sizeN; ++i)
@@ -199,7 +198,6 @@ MatrixInt TransportationTheorySolver::solve(const MatrixInt &mC, const VecInt& v
     cout << "Failed cells:" << endl;
 #endif // LOG_FAILED_CELLS
 
-    //проверка плана на оптимальность
     bool optimalPlan = true;
     IndexPair clearCell(0, 0);
     int max = 0;
