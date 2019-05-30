@@ -6,9 +6,9 @@
 using namespace std;
   int main(void)
   {
-    ifstream mCstream("tasks/transp_mC.txt");
-    ifstream vAstream("tasks/transp_vA.txt");
-    ifstream vBstream("tasks/transp_vB.txt");
+    ifstream mCstream("tasks/transp_mC_multi.txt");
+    ifstream vAstream("tasks/transp_vA_multi.txt");
+    ifstream vBstream("tasks/transp_vB_multi.txt");
 
     int mCrows, mCcols;
     mCstream >> mCrows;
