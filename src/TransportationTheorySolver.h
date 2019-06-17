@@ -5,8 +5,8 @@
 
 #define LOG_INITIAL_PLAN
 #define LOG_CUR_STEP_PLAN
-#define LOG_CUR_POTENTIALS
-#define LOG_FAILED_CELLS
+// #define LOG_CUR_POTENTIALS
+// #define LOG_FAILED_CELLS
 #define LOG_RECALC_LOOP
 #define LOG_THEHA
 

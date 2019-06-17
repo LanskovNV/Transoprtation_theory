@@ -22,6 +22,7 @@ bool TransportationTheorySolver::TryDirection(list<IndexPair> &recalcLoop, const
 
   if (TryDirection(recalcLoop, mRes, cur + dir, target, dir, sizeN, sizeM))
     return true;
+
   if (dir.iCol == 0)
   {
     if (TryDirection(recalcLoop, mRes, cur + IndexPair(0, 1), target, IndexPair(0, 1), sizeN, sizeM))
@@ -52,22 +53,17 @@ bool TransportationTheorySolver::TryDirection(list<IndexPair> &recalcLoop, const
 
   return false;
 }
+
 MatrixInt TransportationTheorySolver::solve(const MatrixInt &mC, const VecInt& vA_, const VecInt& vB_)
 {
   int stepNum = 0;
   MatrixInt res(mC.getRowCnt(), mC.getColCnt());
-
   VecInt vA(vA_);
   VecInt vB(vB_);
-
   int sizeN = vB.getSize();
   int sizeM = vA.getSize();
 
-
-  /*
-   * Creating initial plan
-   */
-
+  /** Creating initial plan */
   IndexPair curCell(0, 0);
   do {
     int val = min(vA[curCell.iRow], vB[curCell.iCol]);
@@ -112,6 +108,7 @@ MatrixInt TransportationTheorySolver::solve(const MatrixInt &mC, const VecInt& v
     }
   } while (curCell != IndexPair(sizeM - 1, sizeN - 1));
 
+  /** check if task is closed */
   if (vA[curCell.iRow] != vB[curCell.iCol])
   {
     cout << "Not Closed Task!" << endl;
@@ -124,13 +121,13 @@ MatrixInt TransportationTheorySolver::solve(const MatrixInt &mC, const VecInt& v
   res.PrintPlan("Initial Basic Plan:");
 #endif // LOG_INITIAL_PLAN
 
-
+  /** create potencials vectors */
   VecInt vPotU(sizeM);
   VecInt vPotV(sizeN);
-
   bool* potUFilled = new bool[sizeM];
   bool* potVFilled = new bool[sizeN];
 
+  /** start main loop */
   for (;;)
   {
     cout << "___________________________________________" << endl;
@@ -139,6 +136,7 @@ MatrixInt TransportationTheorySolver::solve(const MatrixInt &mC, const VecInt& v
     res.PrintPlan("Current Plan: ");
 #endif // LOG_CUR_STEP_PLAN
 
+    /** start potencials count */
     for (int i = 0; i < sizeM; ++i)
       potUFilled[i] = false;
     for (int i = 0; i < sizeN; ++i)
@@ -151,6 +149,7 @@ MatrixInt TransportationTheorySolver::solve(const MatrixInt &mC, const VecInt& v
     while (smthSetted)
     {
       smthSetted = false;
+
       for (int iCol = 0; iCol < sizeN; ++iCol)
       {
         if (!potVFilled[iCol])
@@ -162,13 +161,15 @@ MatrixInt TransportationTheorySolver::solve(const MatrixInt &mC, const VecInt& v
           {
             if (!potUFilled[iRow])
             {
-              vPotU[iRow] = vPotV[iCol] - mC.data[iRow][iCol];
+              vPotU[iRow] = mC.data[iRow][iCol] - vPotV[iCol];
+
               potUFilled[iRow] = true;
               smthSetted = true;
             }
           }
         }
       }
+
       for (int iRow = 0; iRow < sizeM; ++iRow)
       {
         if (!potUFilled[iRow])
@@ -180,7 +181,8 @@ MatrixInt TransportationTheorySolver::solve(const MatrixInt &mC, const VecInt& v
           {
             if (!potVFilled[iCol])
             {
-              vPotV[iCol] = vPotU[iRow] + mC.data[iRow][iCol];
+              vPotV[iCol] = mC.data[iRow][iCol] - vPotU[iRow]; // vPotV[iCol] = vPotU[iRow] + mC.data[iRow][iCol];
+
               potVFilled[iCol] = true;
               smthSetted = true;
             }
@@ -193,41 +195,46 @@ MatrixInt TransportationTheorySolver::solve(const MatrixInt &mC, const VecInt& v
     res.PrintPlanWithPot("Potentials: ", mC, vPotV, vPotU);
 #endif // LOG_CUR_POTENTIALS
 
-
+/** look for bad cells */
 #ifdef LOG_FAILED_CELLS
     cout << "Failed cells:" << endl;
 #endif // LOG_FAILED_CELLS
 
     bool optimalPlan = true;
     IndexPair clearCell(0, 0);
-    int max = 0;
+    int min = 0;
+
     for (int iRow = 0; iRow < sizeM; ++iRow)
     {
-      for (int iCol = 0; iCol < sizeN; ++iCol) {
+      for (int iCol = 0; iCol < sizeN; ++iCol)
+      {
         if (res[iRow][iCol] != -1)
           continue;
-        if (vPotV[iCol] - vPotU[iRow] - mC[iRow][iCol] > 0)
+        int delta = vPotV[iCol] + vPotU[iRow] - mC[iRow][iCol]; // (vPotV[iCol] - vPotU[iRow] - mC[iRow][iCol] > 0)
+        if (delta > 0)
         {
           optimalPlan = false;
 #ifdef LOG_FAILED_CELLS
           cout << "Bad X: " << iRow << " Bad Y: " << iCol << endl;
 #endif // LOG_FAILED_CELLS
-
-          if (vPotV[iCol] - vPotU[iRow] - mC[iRow][iCol] > max)
+          if (abs(delta) > min)
           {
-            max = vPotV[iCol] - vPotU[iRow] - mC[iRow][iCol];
             clearCell = IndexPair(iRow, iCol);
+
+            min = abs(delta);
           }
         }
-
       }
     }
+
     if (optimalPlan)
       break;
 
+    /** Start recalc loop */
     list<IndexPair> recalcLoop;
     recalcLoop.clear();
 
+    /** look for recalc loop cells */
     for (;;)
     {
       if (TryDirection(recalcLoop, res, clearCell + IndexPair(0, 1), clearCell, IndexPair(0, 1), sizeN, sizeM))
@@ -249,20 +256,21 @@ MatrixInt TransportationTheorySolver::solve(const MatrixInt &mC, const VecInt& v
       pair.Print();
 #endif // LOG_RECALC_LOOP
 
+    /** rebuild plan */
     list<IndexPair>::iterator iter = recalcLoop.begin();
     iter++;
 
     int theta = res[*iter];
-    int k = 0;
+    int k = 1;
     while (iter != recalcLoop.end())
     {
-      k = 1 - k;
-      if (k % 2 == 0)
+      k *= -1;
+      if (k > 0)
       {
         iter++;
         continue;
       }
-      if (res[*iter] < theta)
+      if (res[*iter] < theta && res[*iter] != -1)
         theta = res[*iter];
 
       iter++;
@@ -271,7 +279,6 @@ MatrixInt TransportationTheorySolver::solve(const MatrixInt &mC, const VecInt& v
 #ifdef LOG_THEHA
     cout << "Theta: " << theta << endl;
 #endif // LOG_THEHA
-
 
     if (theta != 0)
     {
@@ -287,6 +294,7 @@ MatrixInt TransportationTheorySolver::solve(const MatrixInt &mC, const VecInt& v
           res[pair] = -1;
           cellWasRemoved = true;
         }
+
         k *= -1;
       }
     }

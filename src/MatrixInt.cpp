@@ -115,7 +115,7 @@ void MatrixInt::PrintPlanWithPot(const char * s, const MatrixInt &mC, const VecI
       if (data[iRow][iCol] == -1)
         cout << CLOSED_CELL_SYMB;
       else
-        cout << setw(3) << mC[iRow][iCol] << " ";
+        cout << setw(3) << data[iRow][iCol] << " ";
     }
     cout << setw(3) << vU[iRow] << " ";
     cout << endl;
